@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import asyncio
 import logging
 from typing import List, Optional
-
+from fastapi.middleware.cors import CORSMiddleware
 # Import the OSAgent from your refactored file
 from os_agent import OSAgent, BrowserCode # Assuming BrowserCode is also needed for Pydantic validation if you're returning it directly
 
@@ -19,6 +19,22 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:8000", # For local testing
+    "http://127.0.0.1:8000",
+    # Once you get your frontend's URL from Render, add it here:
+    # e.g., "https://your-os-agent-frontend.onrender.com"
+    "*" # TEMPORARY: Allows all origins for hackathon simplicity. Be specific in production!
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Mount static files (for your HTML, CSS, JS)
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
