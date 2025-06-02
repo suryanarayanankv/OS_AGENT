@@ -1,0 +1,137 @@
+body {
+    background-color: #1a1a1a;
+    font-family: 'Cascadia Code', 'Fira Code', 'monospace', monospace;
+    color: #00ff00; /* Green text for terminal */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Prevent body scroll */
+}
+
+.terminal-container {
+    width: 90%;
+    max-width: 800px;
+    height: 600px;
+    background-color: #000000;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5); /* Green glow */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #006400; /* Darker green border */
+}
+
+.terminal-header {
+    background-color: #004d00; /* Darker green header */
+    padding: 10px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #e0ffe0; /* Lighter text for header */
+    font-size: 0.9em;
+}
+
+.terminal-title {
+    margin-left: 10px;
+}
+
+.terminal-buttons {
+    display: flex;
+    gap: 8px;
+    margin-right: 10px;
+}
+
+.terminal-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.terminal-button.close { background-color: #ff5f56; }
+.terminal-button.minimize { background-color: #ffbd2e; }
+.terminal-button.maximize { background-color: #27c93f; }
+
+.terminal-body {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto; /* Scrollable content */
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85em;
+    line-height: 1.4;
+    white-space: pre-wrap; /* Preserve whitespace and break lines */
+    word-wrap: break-word; /* Ensure long words break */
+    scrollbar-width: thin;
+    scrollbar-color: #006400 #000000; /* Thumb and track color */
+}
+
+.terminal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.terminal-body::-webkit-scrollbar-track {
+    background: #000000;
+}
+
+.terminal-body::-webkit-scrollbar-thumb {
+    background-color: #006400;
+    border-radius: 10px;
+    border: 2px solid #000000;
+}
+
+.terminal-output p {
+    margin: 0;
+    padding: 0;
+    color: #00ff00;
+}
+
+.terminal-output .error {
+    color: #ff4d4d; /* Red for errors */
+}
+
+.terminal-output .info {
+    color: #64e0ff; /* Light blue for info/analysis */
+}
+
+.terminal-output .success {
+    color: #aaffaa; /* Lighter green for success messages */
+}
+
+.terminal-output .prompt-echo {
+    color: #00cc00; /* Slightly darker green for echoed prompt */
+}
+
+.terminal-input-line {
+    display: flex;
+    align-items: center;
+    margin-top: auto; /* Push input to bottom */
+    padding-top: 10px;
+    border-top: 1px dashed #004d00;
+}
+
+.prompt {
+    color: #00ff00;
+    margin-right: 5px;
+    flex-shrink: 0; /* Prevent prompt from shrinking */
+}
+
+.terminal-input {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: #00ff00;
+    flex-grow: 1; /* Take remaining space */
+    font-family: 'Cascadia Code', 'Fira Code', 'monospace', monospace;
+    font-size: 0.85em;
+    caret-color: #00ff00; /* Green blinking cursor */
+}
+
+/* Add this to your style.css if it's not already there */
+.terminal-output .warning {
+    color: #ffcc00; /* Yellow for warnings/confirmation prompts */
+}
