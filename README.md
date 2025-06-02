@@ -2,7 +2,7 @@
 
 This project implements a powerful **AI-driven OS Agent** that can interact with your operating system (Linux or Windows) through natural language commands via a **web-based terminal interface**. It leverages **Google's Gemini 1.5 Flash model** for understanding and executing tasks and features **persistent memory** to learn from past interactions.
 
-> **Note:** The browser automation feature has been explicitly removed from this version of the agent to simplify installation and focus on core OS functionalities.
+> **Note:** The browser automation feature has been explicitly removed from this as demo is working on aws ec2 ubuntu instance.
 
 ---
 
