@@ -2,7 +2,7 @@
 
 This project implements a powerful **AI-driven OS Agent** that can interact with your operating system (Linux or Windows) through natural language commands via a **web-based terminal interface**. It leverages **Google's Gemini 1.5 Flash model** for understanding and executing tasks and features **persistent memory** to learn from past interactions.
 
-> **Note:** The browser automation feature has been explicitly removed from this as demo is working on aws ec2 ubuntu instance.
+> ⚠️ **Important:** Please navigate to the `osagent-v3/` directory before installing or running the project. Earlier versions (`os_agent.py`, `os_agent-v2.py`) include browser automation logic and require additional setup which is not part of this streamlined demo.
 
 ---
 
@@ -37,11 +37,12 @@ This project implements a powerful **AI-driven OS Agent** that can interact with
 ## 📁 Project Structure
 
 ```
-your-os-agent-project/
+osagent-v3/
 ├── os_agent.py              # Core OS agent logic
 ├── app.py                   # FastAPI backend
 ├── .env                     # Your Gemini API key (you will create this)
-├── requirements.txt         # Python dependencies (you will create this)
+├── requirements.txt         # Python dependencies
+├── agent_memory/            # Stores persistent memory and logs
 └── frontend/
     ├── index.html           # Web terminal UI
     ├── script.js            # Frontend logic
@@ -63,13 +64,16 @@ your-os-agent-project/
 
 ### 1. Clone the Repository
 
-Download or clone the repository and ensure the files follow the structure above.
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+cd osagent-v3
+```
 
 ---
 
 ### 2. Set Up Your Gemini API Key
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the `osagent-v3/` directory:
 
 ```env
 GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
@@ -81,7 +85,7 @@ GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
 
 ### 3. Install Python Dependencies
 
-Create a `requirements.txt` file with the following content:
+Create or confirm `requirements.txt` includes the following:
 
 ```txt
 fastapi
@@ -91,7 +95,7 @@ google-generativeai
 psutil
 ```
 
-Install the dependencies:
+Then install:
 
 ```bash
 pip install -r requirements.txt
@@ -101,7 +105,7 @@ pip install -r requirements.txt
 
 ### 4. Run the FastAPI Application
 
-From the root directory, run:
+From inside the `osagent-v3` folder, run:
 
 ```bash
 uvicorn app:app --reload
@@ -110,7 +114,7 @@ uvicorn app:app --reload
 - `app:app` → Refers to the `app` object in `app.py`
 - `--reload` → Auto-reloads the server when code changes (dev mode)
 
-You should see output indicating the server is running on:
+You should see output showing:
 
 ```
 http://127.0.0.1:8000
@@ -133,6 +137,8 @@ You’ll see a terminal-style web interface. Type commands and press `Enter`.
 - `show me running processes`
 - `what is my current operating system?`
 
+---
+
 ### 🧩 Frontend-only Commands
 
 - `status` → Show system status  
@@ -148,8 +154,6 @@ You’ll see a terminal-style web interface. Type commands and press `Enter`.
 
 For potentially destructive commands, the agent will ask for confirmation:
 
-Example:
-
 ```bash
 Are you sure you want to delete 'important.txt'? (yes/no)
 ```
@@ -158,7 +162,7 @@ Are you sure you want to delete 'important.txt'? (yes/no)
 
 ## 🧠 Memory and Persistence
 
-The agent stores memory in the `agent_memory/` directory (auto-created):
+The agent stores memory in the `agent_memory/` directory:
 
 - `agent_memory.db` → SQLite database (conversations, facts, logs)
 - `quick_memory.json` → JSON file for fast access to frequently used data
@@ -177,6 +181,3 @@ Feel free to **fork the repository**, **open issues**, or **submit pull requests
 ## 📄 License
 
 This project is open-source and available under the **MIT License**.
-
----
-
