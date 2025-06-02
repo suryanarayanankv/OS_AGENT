@@ -1,183 +1,199 @@
-# 💻 Cross-Platform OS Agent with Persistent Memory (Web UI)
+# 🧠 OS_AGENT – AI That Controls Your Operating System
 
-This project implements a powerful **AI-driven OS Agent** that can interact with your operating system (Linux or Windows) through natural language commands via a **web-based terminal interface**. It leverages **Google's Gemini 1.5 Flash model** for understanding and executing tasks and features **persistent memory** to learn from past interactions.
+**OS_AGENT** is an **AI-powered cross-platform agent** with **complete access to your operating system**, allowing it to understand and execute **natural language instructions**. It's not just a chatbot — it's an intelligent operating system companion capable of **controlling files, processes, applications, and environments** in real-time through a **web-based terminal interface**.
 
-> ⚠️ **Important:** Please navigate to the `osagent-v3/` directory before installing or running the project. Earlier versions (`os_agent.py`, `os_agent-v2.py`) include browser automation logic and require additional setup which is not part of this streamlined demo.
+Built using **Gemini 1.5 Flash**, FastAPI, and a sleek web UI, it remembers your interactions with **persistent memory**, offering an evolving and personalized command-line assistant.
 
----
-
-## ✨ Features
-
-- **Natural Language OS Control**  
-  Issue commands like:  
-  `"list files in my home directory"`,  
-  `"create a new folder named 'my_project'"`, or  
-  `"show me running processes"`.
-
-- **Cross-Platform Compatibility**  
-  Designed to work on both **Linux** and **Windows**.
-
-- **Persistent Memory**  
-  Learns and remembers system facts, command usage patterns, and conversation history **across sessions**.
-
-- **Web-Based Terminal Interface**  
-  Interact with the agent through a **user-friendly terminal emulation** in your browser.
-
-- **Command Confirmation**  
-  Prompts for **explicit confirmation** before executing sensitive commands (e.g., deleting files).
-
-- **Real-time Feedback**  
-  Immediate feedback on command success/failure along with command output.
-
-- **System Monitoring**  
-  Query system status, list running processes, and view agent memory statistics.
+> 🔥 Whether you're a power user, system administrator, or automation enthusiast — OS_AGENT is your **next-generation shell**.
 
 ---
 
-## 📁 Project Structure
+## 🚨 Important Notes
 
-```
+- ✅ Please use the latest version located in the `osagent-v3/` folder.
+- 🚫 **Browser automation is currently not available** in the demo version.
+- ☁️ The app is set up and running as a **web UI hosted on an AWS EC2 Ubuntu instance**.
+
+---
+
+## 🚀 Capabilities
+
+- ✅ **Full Control of the Operating System**
+  - List/create/delete files and directories
+  - Read/write/edit files
+  - Run OS-level commands
+  - Launch and kill processes
+  - Monitor CPU/memory/processes
+  - Perform network-related tasks
+  - Detect platform (Windows/Linux) and auto-adjust commands
+
+- 💡 **Conversational AI with Memory**
+  - Persistent memory of past commands and facts
+  - Can refer to previous conversations or system states
+  - Learns over time
+
+- 🌐 **Web Terminal Interface**
+  - Type and execute commands in your browser
+  - Clean, terminal-like UI with real-time feedback
+  - Input auto-suggestions and history support
+
+- 🛡️ **Confirmation Layer**
+  - Sensitive operations (e.g. deleting files, terminating processes) require confirmation
+  - Prevents accidental destructive operations
+
+- 📊 **Real-Time Monitoring**
+  - System health and status
+  - Active processes, memory usage, platform details
+
+- 🔒 **Secure and Local**
+  - Runs locally with no data sent externally
+  - Your files and instructions never leave your machine unless you allow it
+
+---
+
+## 🏗️ Tech Stack
+
+- 🧠 Gemini 1.5 Flash (Google Generative AI)
+- ⚙️ Python 3.8+
+- ⚡ FastAPI (Backend API)
+- 🎨 HTML + CSS + JS (Frontend UI)
+- 🗃️ SQLite + JSON (Memory persistence)
+- 📦 psutil, python-dotenv, uvicorn, google-generativeai
+
+---
+
+## 📁 Directory Structure
+
+```bash
 osagent-v3/
-├── os_agent.py              # Core OS agent logic
+├── os_agent.py              # Core OS control + Gemini agent logic
 ├── app.py                   # FastAPI backend
-├── .env                     # Your Gemini API key (you will create this)
+├── .env                     # Your Gemini API key
 ├── requirements.txt         # Python dependencies
-├── agent_memory/            # Stores persistent memory and logs
+├── agent_memory/            # Stores persistent memory
 └── frontend/
-    ├── index.html           # Web terminal UI
-    ├── script.js            # Frontend logic
-    └── style.css            # Terminal styling
+    ├── index.html           # Web UI
+    ├── script.js            # Terminal JS logic
+    └── style.css            # Terminal design
 ```
 
 ---
 
-## 🚀 Setup and Installation
-
-### 📌 Prerequisites
-
-- Python 3.8+
-- `pip` (Python package installer)
-- An active Google Cloud project with Gemini API enabled  
-  (you’ll need your `GEMINI_API_KEY`)
-
----
+## 🔧 Installation Guide
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd osagent-v3
+git clone https://github.com/suryanarayanankv/OS_AGENT.git
+cd OS_AGENT/osagent-v3
 ```
 
----
+### 2. Set Up Environment
 
-### 2. Set Up Your Gemini API Key
-
-Create a `.env` file in the `osagent-v3/` directory:
+Create a `.env` file:
 
 ```env
-GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
+GEMINI_API_KEY="your_gemini_api_key_here"
 ```
 
-> ⚠️ **Important:** Replace with your actual Gemini API key. Keep this file private and **never commit it** to a public repository.
+Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
 
----
-
-### 3. Install Python Dependencies
-
-Create or confirm `requirements.txt` includes the following:
-
-```txt
-fastapi
-uvicorn
-python-dotenv
-google-generativeai
-psutil
-```
-
-Then install:
+### 3. Install Requirements
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-### 4. Run the FastAPI Application
-
-From inside the `osagent-v3` folder, run:
+### 4. Run the App
 
 ```bash
 uvicorn app:app --reload
 ```
 
-- `app:app` → Refers to the `app` object in `app.py`
-- `--reload` → Auto-reloads the server when code changes (dev mode)
-
-You should see output showing:
-
-```
-http://127.0.0.1:8000
-```
+Visit: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
 
-## 🌐 Usage
+## 💬 Example Commands
 
-Open your browser and go to `http://127.0.0.1:8000`
+Try saying:
 
-You’ll see a terminal-style web interface. Type commands and press `Enter`.
-
----
-
-### 🧪 Example Commands to Try
-
-- `list files in current directory`
-- `create a folder named 'test_agent_dir'`
-- `show me running processes`
-- `what is my current operating system?`
+- `list all files in Downloads`
+- `create a Python file named hello.py`
+- `delete the folder test_dir` (will ask for confirmation)
+- `show me the processes using the most memory`
+- `what OS am I running on?`
+- `open notepad` (on Windows)
+- `kill process named chrome`
 
 ---
 
-### 🧩 Frontend-only Commands
+## 🧠 Agent Memory
 
-- `status` → Show system status  
-- `processes` → List running processes  
-- `memory_stats` → Show agent memory info  
-- `help` → List available commands  
-- `clear` → Clear the terminal screen  
-- `quit` → Disable terminal input
+Stored in `agent_memory/`:
+
+- **`agent_memory.db`** – Conversation logs, system facts
+- **`quick_memory.json`** – Frequently accessed memory slots
+
+This memory persists across sessions, allowing long-term context.
 
 ---
 
-### 🔐 Command Confirmation
+## 🧩 Agent Commands
 
-For potentially destructive commands, the agent will ask for confirmation:
+| Command        | Description                          |
+|----------------|--------------------------------------|
+| `status`       | Show system status summary           |
+| `processes`    | List running system processes        |
+| `memory_stats` | Show agent memory usage              |
+| `clear`        | Clear the terminal UI                |
+| `help`         | List all supported commands          |
+| `quit`         | Disable input temporarily            |
+
+---
+
+## 🧠 Why This Matters
+
+> Imagine a future where you don’t need to remember `bash` or `cmd` syntax.  
+> You just say:  
+> _“Zip all files from last week and email it to me”_ — and it’s done.
+
+**OS_AGENT bridges the gap between human language and OS-level control.**
+
+---
+
+## 🔐 Warning
+
+> **⚠️ This agent has real OS control.**
+- Use it responsibly.
+- Never run it in production environments without proper sandboxing.
+- Confirmation prompts are included for safety but not foolproof.
+
+---
+
+## 🧑‍💻 Contributing
+
+PRs are welcome!  
+To contribute:
 
 ```bash
-Are you sure you want to delete 'important.txt'? (yes/no)
+git checkout -b feature/your-feature-name
 ```
 
 ---
 
-## 🧠 Memory and Persistence
+## 📜 License
 
-The agent stores memory in the `agent_memory/` directory:
-
-- `agent_memory.db` → SQLite database (conversations, facts, logs)
-- `quick_memory.json` → JSON file for fast access to frequently used data
-
-This enables contextual, intelligent responses over time.
+[MIT License](LICENSE)
 
 ---
 
-## 🤝 Contributing
+## 📎 Acknowledgements
 
-Contributions are welcome!  
-Feel free to **fork the repository**, **open issues**, or **submit pull requests**.
+- Gemini API by Google
+- FastAPI for blazing-fast APIs
+- Terminal.js inspiration from modern terminal emulators
 
 ---
 
-## 📄 License
-
-This project is open-source and available under the **MIT License**.
+**🚀 Your OS has never been this smart. Start talking to it.**
