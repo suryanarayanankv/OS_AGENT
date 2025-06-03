@@ -329,7 +329,7 @@ class OSAgent:
 
         # Configure Gemini for OS Agent
         genai.configure(api_key=gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash') # Keep 1.5 Flash for OS interactions
+        self.model = genai.GenerativeModel('gemini-2.0-flash') # Keep 1.5 Flash for OS interactions
 
         # Initialize memory manager
         self.memory = MemoryManager()
