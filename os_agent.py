@@ -348,7 +348,7 @@ class OSAgent:
         self.memory.store_system_fact("hostname", self.system_info['hostname'])
 
         # Browser automation setup
-        self.browser_llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=gemini_api_key) # Use 1.5 Flash for browser automation
+        self.browser_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key=gemini_api_key) # Use 1.5 Flash for browser automation
         self.browser_session = BrowserSession(
             executable_path='/usr/bin/brave-browser', # Ensure this path is correct for your system
             downloads_path='Downloads', # Or your desired downloads directory (relative to current working directory)
