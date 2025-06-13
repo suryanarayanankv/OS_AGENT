@@ -1,6 +1,6 @@
 
 import asyncio
-from browser_use import Agent, BrowserSession,Controller
+from browser_use import Agent, BrowserSession,Controller,BrowserProfile
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel,Field
 from typing import List
@@ -11,14 +11,14 @@ from typing import List
 # i used brave broswer , worked well in that 
 
 
-llm= ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key="your api key ")
+llm= ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key="AIzaSyCZema4Im_8VvKvpC7WvtlZKmSEaOpxVLk")
 
 browser_session = BrowserSession(
     # Path to a specific Chromium-based executable (optional)
-    executable_path='C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',  # macOS
-    downloads_path='Downloads',
+    executable_path='C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
     # Use a specific data directory on disk (optional, set to None for incognito)
     user_data_dir=r'C:\Users\<your username>\AppData\Local\browseruse\profiles\default',  
+
 )
 
 
