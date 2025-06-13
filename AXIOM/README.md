@@ -1,4 +1,4 @@
-## Accessible Automation Agent - 100x Competition Submission
+## Accessible Automation Agent 
 
 **Introduction:**
 
