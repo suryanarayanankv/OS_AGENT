@@ -19,6 +19,7 @@ The **MCP Agent** is a lightweight, powerful terminal-based AI agent that connec
    ```bash
    git clone https://github.com/your-username/mcp-agent.git
    cd mcp-agent
+   cd AXIOM
    ```
 
 2. **Create a `.env` file** and add your Google API key:
