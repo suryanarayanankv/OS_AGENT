@@ -1,58 +1,171 @@
-## Accessible Automation Agent 
+# 🧠 MCP Agent
 
-**Introduction:**
+### Terminal-First, AI-Powered Automation with Built-In Tool Support
 
-Meet the Accessible Automation Agent, designed to empower users of all technical backgrounds. This agent simplifies complex tasks, making automation accessible to everyone.
+The **MCP Agent** is a lightweight, powerful terminal-based AI agent that connects to multiple services using modular tool servers. It can perform complex tasks like summarizing emails, interacting with GitHub, automating Airbnb workflows, and more — all through natural language. Designed for extensibility and privacy, it supports local LLMs and integrates easily with any service.
 
-**Technical Aspects:**
+---
 
-*   **Key Files:**
-    *   `success.py`: This file initializes and runs the main agent loop. It uses Langchain and Google Gemini to create an autonomous agent with memory management capabilities. It leverages the MCP (Managed Component Protocol) client for tool access.
-    *   `planner.py`: This file implements a "Prompt Enhancement Assistant" that helps users refine their prompts for better agent performance. It uses Langchain and Google Gemini to provide conversational prompt improvement.
-    *   `.env`: This file stores the Google API key.
-    *   `browser_mcp.json`: This file likely contains configuration details for the MCP client, potentially including API keys or service endpoints.
-*   **Key Functions and Classes:**
-    *   `success.py`: `run_interactive()` initializes the agent, sets up the prompt, and runs the main loop to interact with the user.
-    *   `planner.py`: `SimplePlannerAgent` class handles prompt enhancement. The `chat()` method formats the prompt, invokes the LLM, and manages chat history.
-*   **Dependencies:**
-    *   `langchain`: Framework for building LLM-powered applications.
-    *   `langchain_google_genai`: Integration for Google's Gemini models.
-    *   `mcp_use`: Library for interacting with the Managed Component Protocol.
-    *   `dotenv`: For loading environment variables from a `.env` file.
-    *   `asyncio`: For asynchronous programming.
-*   **Interaction:** `success.py` uses the `MCPClient` to access various tools and the `LangChainAdapter` to make them compatible with the Langchain framework. The agent in `success.py` interacts with the user to receive instructions and executes tasks using the available tools. `planner.py` enhances user prompts before they are passed to the agent.
-*   **Algorithms/Techniques:** The agent uses a prompt template to guide the LLM's behavior. It also implements memory management to maintain context across multiple turns of conversation.
+## ⚙️ Prerequisites
 
-**Features:**
+- **Python 3.11+** – Required to run the core MCP Agent and manage its execution environment.
 
-*   **External Services:** Access to external services via the MCP client (details depend on the MCP configuration).
-*   **OS-Level Integration:** Potentially, depending on the tools available through the MCP client.
-*   **Task Automation:** Automates tasks based on user input and available tools.
-*   **User-Friendly Interface:** Interactive command-line interface.
-*   **Proactive Memory Management:** The agent actively stores and retrieves information to improve performance and personalize interactions.
-*   **Prompt Enhancement:** The `planner.py` script provides a way to improve prompts for better automation results.
+---
 
-**How to Use:**
+## 🚀 Setup
 
-1.  Ensure you have a Google API key and place it in a `.env` file.
-2.  Configure the `browser_mcp.json` file with the necessary credentials and service endpoints for the MCP client.
-3.  Run `success.py` to start the agent.
-4.  Interact with the agent via the command line, providing instructions and tasks.
-5.  Use `planner.py` to refine your prompts for better results.
+1. **Clone the repository**
 
-**Example Use Cases:**
+   ```bash
+   git clone https://github.com/your-username/mcp-agent.git
+   cd mcp-agent
+   ```
 
-*   "Search for repositories related to 'Langchain' and create an issue in one of them."
-*   "Find the latest Airbnb listings in London for two adults."
-*   "Help me write a better prompt for summarizing a document."
+2. **Create a `.env` file** and add your Google API key:
 
-**Future Development:**
+   ```env
+   GOOGLE_API_KEY=your_google_api_key_here
+   ```
 
-*   Integration with a graphical user interface.
-*   Expanded toolset via the MCP client.
-*   More sophisticated memory management and reasoning capabilities.
-*   Improved prompt engineering and error handling.
+3. **Create a `browser_mcp.json` file** in the root directory. This file will contain your configured MCP servers. See below for examples.
 
-**Competition Context:**
+---
 
-This Accessible Automation Agent is a submission for the 100x competition. It showcases the potential of accessible automation by providing a user-friendly interface to powerful LLM and tool-based automation. The agent's proactive memory management and prompt enhancement capabilities demonstrate its ability to learn and adapt to user needs, making it a valuable tool for users of all technical skill levels.
+## 🧠 Adding Long-Term Memory (openMemory MCP)
+
+To enable long-term memory in your agent, add the following config inside `browser_mcp.json` under `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "openmemory": {
+      "command": "npx",
+      "args": ["-y", "openmemory"],
+      "env": {
+        "OPENMEMORY_API_KEY": "your_api_key_here",
+        "CLIENT_NAME": "openmemory"
+      }
+    }
+  }
+}
+```
+
+This provides persistent, searchable memory to your system — allowing agents to retain knowledge across sessions.
+
+### 🔐 Get Your API Key
+
+1. Visit [https://mem0.ai/openmemory-mcp](https://mem0.ai/openmemory-mcp) and sign in.
+2. Click **"Install openMemory"**.
+3. Click on the **MCP link** provided.
+4. Copy your API key and paste it into the JSON above.
+
+### 📦 Requirement
+
+- **Node.js** – Required to run the `openmemory` server via `npx`.
+
+📺 [Watch this guide to install Node.js](https://youtu.be/kC56yUZCKu4?feature=shared)
+
+---
+
+## 🔗 Connecting Automations (Zapier MCP)
+
+To connect your agent with Zapier and unlock automations, add the following to `browser_mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "zapier": {
+      "url": "https://hooks.zapier.com/mcp/your-server-url"
+    }
+  }
+}
+```
+
+### 🛠 How to Set It Up
+
+1. Go to [https://zapier.com/mcp](https://zapier.com/mcp)
+2. Click **"Get Started"**
+3. Click **"+ New MCP Server"**
+4. Choose **"Other"** as the client
+5. Add your tools in the **Configure** section
+6. Set **Transport Type** to **SSE**
+7. Copy the generated **Server URL**
+8. Paste it into the JSON above
+
+### 💡 Why Zapier?
+
+Zapier MCP gives you instant access to **over 8000 built-in tools** — like Gmail, Slack, Sheets — without configuring each individually.
+
+### ⚠️ Beta Warning
+
+Zapier MCP is in **beta**, so you may encounter internal server errors. Retry after a few moments if needed.
+
+---
+
+## 📁 Example `browser_mcp.json` Structure
+
+Here’s how your `browser_mcp.json` should look with both `openmemory` and `zapier` configured:
+
+```json
+{
+  "mcpServers": {
+    "openmemory": {
+      "command": "npx",
+      "args": ["-y", "openmemory"],
+      "env": {
+        "OPENMEMORY_API_KEY": "your_api_key_here",
+        "CLIENT_NAME": "openmemory"
+      }
+    },
+    "zapier": {
+      "url": "https://hooks.zapier.com/mcp/your-server-url"
+    }
+  }
+}
+```
+
+---
+
+## 🌐 Add More MCP Servers
+
+You can easily extend your agent by adding more MCP servers — there are thousands available!
+
+Check out these curated lists:
+- [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers)
+- [appcypher/awesome-mcp-servers](https://github.com/appcypher/awesome-mcp-servers)
+
+Just copy and paste their example JSON blocks into your `browser_mcp.json` under the `mcpServers` key.
+
+---
+
+## ✅ Next Steps
+
+- Add more MCP servers (e.g., GitHub, Airbnb, Gmail)
+- Connect to local or cloud LLMs
+- Build workflows and memory with ease
+
+
+
+## ▶️ Running the Agent
+```bash
+pip install  -r requirements.txt
+```
+Once your `browser_mcp.json` is configured, you can start using the agent:
+
+```bash
+python success.py
+```
+
+To get well-structured natural language prompts for tasks, you can also run:
+
+```bash
+python planner.py
+```
+
+This helps generate clear task prompts to pass to your MCP Agent.
+
+---
+
+## 📬 Contact
+
+For any queries, reach out to **githubsurya@gmail.com**
