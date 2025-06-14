@@ -34,7 +34,7 @@ The **MCP Agent** is a lightweight, powerful terminal-based AI agent that connec
 
 ## 🧠 Adding Long-Term Memory (openMemory MCP)
 
-To enable long-term memory in your agent, add the following config inside `browser_mcp.json` under `mcpServers`:
+To enable long-term memory in your agent, add the following config inside `browser_mcp.json` under `mcpServers`(#mandatory):
 
 ```json
 {
