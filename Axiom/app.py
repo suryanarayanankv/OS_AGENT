@@ -11,6 +11,7 @@ import json
 from contextlib import asynccontextmanager
 import sqlite3
 from datetime import datetime
+import os
 
 # Import backend components
 from axiom_backend.Axiom_2 import initialize_agent, invoke_agent, summarize_chat_history
@@ -47,6 +48,35 @@ templates = Jinja2Templates(directory=frontend_dist_dir)
 
 # Include MCP router
 app.include_router(mcp_router, prefix="/api")
+
+def init_chat_db():
+    db_path = os.path.join(os.path.dirname(__file__), "memory.sqlite")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    # Create chat_sessions table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS chat_sessions (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    )
+    """)
+    # Create chat_messages table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS chat_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        FOREIGN KEY(session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
+    )
+    """)
+    conn.commit()
+    conn.close()
+
+init_chat_db()
 
 async def periodic_metrics_logger(interval_seconds: int = 60):
     while True:

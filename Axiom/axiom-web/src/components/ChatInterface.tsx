@@ -1,24 +1,25 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageBubble } from './MessageBubble';
 import { ChatHistory } from './ChatHistory';
 import { MCPServerConfig } from './MCPServerConfig';
 import { Message, ChatSession, MCPServer } from '../types/chat';
 import { Send, Settings, Menu, X, Sparkles } from 'lucide-react';
 
+function parseDate(date: string | Date): Date {
+  return date instanceof Date ? date : new Date(date);
+}
+
 export const ChatInterface: React.FC = () => {
-  const [sessions, setSessions] = useState<ChatSession[]>([{
-    id: 'default',
-    title: 'New Chat',
-    messages: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }]);
-  const [activeSessionId, setActiveSessionId] = useState<string>('default');
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [inputMessage, setInputMessage] = useState('');
   const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [showMcpConfig, setShowMcpConfig] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [creatingSession, setCreatingSession] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -33,49 +34,197 @@ export const ChatInterface: React.FC = () => {
     scrollToBottom();
   }, [activeSession?.messages, isTyping]);
 
+  // Load all sessions on mount
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch('/api/chat_sessions')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load sessions');
+        return res.json();
+      })
+      .then(data => {
+        const loadedSessions: ChatSession[] = (data.sessions || []).map((s: any) => ({
+          id: s.id,
+          title: s.title,
+          messages: [], // will be loaded on select
+          createdAt: parseDate(s.created_at),
+          updatedAt: parseDate(s.updated_at),
+        }));
+        setSessions(loadedSessions);
+        if (loadedSessions.length > 0) setActiveSessionId(loadedSessions[0].id);
+        setLoading(false);
+      })
+      .catch(e => {
+        setError(e.message || 'Failed to load sessions');
+        setLoading(false);
+      });
+  }, []);
+
+  // Load messages for active session
+  useEffect(() => {
+    if (!activeSessionId) return;
+    fetch(`/api/chat_sessions/${activeSessionId}`)
+      .then(res => res.json())
+      .then(data => {
+        setSessions(prev => prev.map(s =>
+          s.id === activeSessionId
+            ? { ...s, messages: (data.messages || []).map((m: any) => ({
+                id: m.id.toString(),
+                content: m.content,
+                role: m.role,
+                timestamp: parseDate(m.timestamp),
+              })) }
+            : s
+        ));
+      });
+  }, [activeSessionId]);
+
+  // After the initial session load effect:
+  useEffect(() => {
+    if (!loading && !creatingSession && sessions.length === 0 && !activeSessionId) {
+      setCreatingSession(true);
+      (async () => {
+        await createNewSession();
+        setCreatingSession(false);
+      })();
+    }
+  }, [loading, creatingSession, sessions, activeSessionId]);
+
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const createNewSession = () => {
-    const newSession: ChatSession = {
-      id: generateId(),
-      title: 'New Chat',
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setSessions(prev => [newSession, ...prev]);
-    setActiveSessionId(newSession.id);
-  };
+  // Create new session (persisted)
+  const createNewSession = useCallback(async () => {
+    try {
+      const newId = generateId();
+      const now = new Date();
+      const res = await fetch('/api/chat_sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: newId, title: 'New Chat' }),
+      });
+      if (!res.ok) throw new Error('Failed to create session');
+      const data = await res.json();
+      const newSession: ChatSession = {
+        id: data.id,
+        title: data.title,
+        messages: [],
+        createdAt: parseDate(data.created_at),
+        updatedAt: parseDate(data.updated_at),
+      };
+      setSessions(prev => [newSession, ...prev]);
+      setActiveSessionId(newSession.id);
+    } catch (e: any) {
+      setError(e.message || 'Failed to create session');
+    }
+  }, []);
 
+  // Send message (persisted)
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
+    let currentSessionId = activeSessionId;
+    // Create new session if none exists
+    if (!currentSessionId) {
+      await createNewSession();
+      // Wait for the new session to be set as active
+      const res = await fetch('/api/chat_sessions');
+      const data = await res.json();
+      const loadedSessions: ChatSession[] = (data.sessions || []).map((s: any) => ({
+        id: s.id,
+        title: s.title,
+        messages: [],
+        createdAt: parseDate(s.created_at),
+        updatedAt: parseDate(s.updated_at),
+      }));
+      setSessions(loadedSessions);
+      if (loadedSessions.length > 0) setActiveSessionId(loadedSessions[0].id);
+      return;
+    }
     const userMessage: Message = {
       id: generateId(),
       content: inputMessage,
       role: 'user',
       timestamp: new Date(),
     };
+    // Persist user message
+    await fetch('/api/chat_message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: currentSessionId,
+        role: 'user',
+        content: userMessage.content,
+        timestamp: userMessage.timestamp.toISOString(),
+      }),
+    });
     setSessions(prev => prev.map(session =>
-      session.id === activeSessionId
+      session.id === currentSessionId
         ? { ...session, messages: [...session.messages, userMessage], updatedAt: new Date() }
         : session
     ));
     setInputMessage('');
     setIsTyping(true);
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: currentSessionId, message: userMessage.content }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const aiResponseContent = data.response || 'No response from AI.';
       const aiMessage: Message = {
         id: generateId(),
-        content: `Echo: ${userMessage.content}`,
+        content: aiResponseContent,
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+      // Persist assistant message
+      await fetch('/api/chat_message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: currentSessionId,
+          role: 'assistant',
+          content: aiMessage.content,
+          timestamp: aiMessage.timestamp.toISOString(),
+        }),
+      });
+      setSessions(prev => prev.map(session =>
+        session.id === currentSessionId
+          ? { ...session, messages: [...session.messages, aiMessage], updatedAt: new Date() }
+          : session
+      ));
+    } catch (error) {
+      const errorMessage: Message = {
+        id: generateId(),
+        content: `Error: Could not get response from AI. ${error instanceof Error ? error.message : String(error)}`,
         role: 'assistant',
         timestamp: new Date(),
       };
       setSessions(prev => prev.map(session =>
-        session.id === activeSessionId
-          ? { ...session, messages: [...session.messages, aiMessage], updatedAt: new Date() }
+        session.id === currentSessionId
+          ? { ...session, messages: [...session.messages, errorMessage], updatedAt: new Date() }
           : session
       ));
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
+  };
+
+  // Delete session (persisted)
+  const deleteSession = async (sessionId: string) => {
+    await fetch(`/api/chat_sessions/${sessionId}`, { method: 'DELETE' });
+    setSessions(prev => {
+      const updatedSessions = prev.filter(s => s.id !== sessionId);
+      if (activeSessionId === sessionId) {
+        setActiveSessionId(updatedSessions.length > 0 ? updatedSessions[0].id : null);
+      }
+      return updatedSessions;
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -83,16 +232,6 @@ export const ChatInterface: React.FC = () => {
       e.preventDefault();
       sendMessage();
     }
-  };
-
-  const deleteSession = (sessionId: string) => {
-    setSessions(prev => {
-      const updatedSessions = prev.filter(s => s.id !== sessionId);
-      if (activeSessionId === sessionId) {
-        setActiveSessionId(updatedSessions.length > 0 ? updatedSessions[0].id : '');
-      }
-      return updatedSessions;
-    });
   };
 
   const addMcpServer = (server: Omit<MCPServer, 'id'>) => {
@@ -115,6 +254,24 @@ export const ChatInterface: React.FC = () => {
         : server
     ));
   };
+
+  if (loading || creatingSession) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="text-white text-lg">Loading chat sessions...</div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="bg-red-500/20 text-red-200 p-6 rounded-xl shadow-lg">
+          <div className="font-bold mb-2">Error</div>
+          <div>{error}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
