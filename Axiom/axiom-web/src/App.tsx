@@ -17,7 +17,7 @@ const Navigation: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 backdrop-blur-md border-b border-white/10 p-4">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 backdrop-blur-md border-b border-white/10 p-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-8">
           <div className="flex items-center gap-3">
@@ -54,12 +54,14 @@ const Navigation: React.FC = () => {
   );
 };
 
+const NAV_HEIGHT = 80; // px, matches p-4 and content height
+
 const App: React.FC = () => {
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <Navigation />
-        <main className="flex-1">
+        <main className="flex-1 pt-24"> {/* pt-24 = 6rem = 96px, enough for nav height and spacing */}
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/chat" element={<ChatInterface />} />
