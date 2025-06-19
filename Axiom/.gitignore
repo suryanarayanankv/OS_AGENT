@@ -25,7 +25,7 @@ MANIFEST
 .env
 .venv
 env/
-os-agent-venv
+os-agent-venv/
 venv/
 ENV/
 env.bak/
