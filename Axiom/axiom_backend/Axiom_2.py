@@ -86,6 +86,30 @@ def format_tool_output(content: str) -> str:
     # Join with newlines
     return '\n'.join(formatted_lines)
 
+def init_chat_db():
+    conn = sqlite3.connect("memory.sqlite")
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+            id TEXT PRIMARY KEY,
+            title TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT,
+            role TEXT,
+            content TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
 async def initialize_agent():
     """Initialize the LangGraph agent with necessary tools and configuration."""
     global _agent, zapier_tools_list
@@ -95,6 +119,9 @@ async def initialize_agent():
 
     sqlite_conn = await aiosqlite.connect("memory.sqlite", check_same_thread=False)
     memory = AsyncSqliteSaver(sqlite_conn)
+
+    # Initialize chat DB tables
+    init_chat_db()
 
     # Initialize Zapier tools (will return empty list if MCP is not available)
     zapier_tools_list = await initialize_and_get_mcp_tools()
