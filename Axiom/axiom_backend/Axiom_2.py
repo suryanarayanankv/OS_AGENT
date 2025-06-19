@@ -13,6 +13,7 @@ from .zapier_tools import initialize_and_get_mcp_tools
 from .file_tools import get_file_tools, create_file, write_file, read_file, replace_in_file, delete_file
 from .prompts import SYSTEM_PROMPT
 import re
+import os
 
 import asyncio
 
@@ -100,7 +101,13 @@ async def initialize_agent():
 
     graph = StateGraph(AgentState)
 
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+    # Get Google API key from environment variable
+    google_api_key = os.getenv("GOOGLE_API_KEY")
+    if not google_api_key:
+        raise RuntimeError("GOOGLE_API_KEY environment variable not set. Please set it to your Google Generative AI API key.")
+
+    # Pass the API key to the LLM
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", api_key=google_api_key)
     # llm = ChatGroq(model="llama-3.1-8b-instant")
 
     # Combine all tools
