@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Dict, Any, List
 import json
 from contextlib import asynccontextmanager
+import sqlite3
+from datetime import datetime
 
 # Import backend components
 from axiom_backend.Axiom_2 import initialize_agent, invoke_agent, summarize_chat_history
@@ -167,6 +169,67 @@ async def summarize_chat(request: Dict[str, Any]):
     except Exception as e:
         print(f"Error summarizing chat: {e}")
         raise HTTPException(status_code=500, detail=f"Error summarizing chat: {str(e)}")
+
+@app.get("/api/chat_sessions")
+async def list_chat_sessions():
+    conn = sqlite3.connect("memory.sqlite")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, title, created_at, updated_at FROM chat_sessions ORDER BY updated_at DESC")
+    sessions = [
+        {"id": row[0], "title": row[1], "created_at": row[2], "updated_at": row[3]}
+        for row in cursor.fetchall()
+    ]
+    conn.close()
+    return JSONResponse(content={"sessions": sessions})
+
+@app.get("/api/chat_sessions/{session_id}")
+async def get_chat_session_messages(session_id: str):
+    conn = sqlite3.connect("memory.sqlite")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, role, content, timestamp FROM chat_messages WHERE session_id = ? ORDER BY timestamp ASC", (session_id,))
+    messages = [
+        {"id": row[0], "role": row[1], "content": row[2], "timestamp": row[3]} for row in cursor.fetchall()
+    ]
+    conn.close()
+    return JSONResponse(content={"messages": messages})
+
+@app.post("/api/chat_sessions")
+async def create_chat_session(payload: Dict[str, Any]):
+    session_id = payload.get("id")
+    title = payload.get("title", "Untitled Chat")
+    now = datetime.utcnow().isoformat()
+    conn = sqlite3.connect("memory.sqlite")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO chat_sessions (id, title, created_at, updated_at) VALUES (?, ?, ?, ?)", (session_id, title, now, now))
+    conn.commit()
+    conn.close()
+    return JSONResponse(content={"id": session_id, "title": title, "created_at": now, "updated_at": now})
+
+@app.delete("/api/chat_sessions/{session_id}")
+async def delete_chat_session(session_id: str):
+    conn = sqlite3.connect("memory.sqlite")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM chat_sessions WHERE id = ?", (session_id,))
+    cursor.execute("DELETE FROM chat_messages WHERE session_id = ?", (session_id,))
+    conn.commit()
+    conn.close()
+    return JSONResponse(content={"status": "success", "message": f"Session {session_id} deleted"})
+
+@app.post("/api/chat_message")
+async def add_chat_message(payload: Dict[str, Any]):
+    session_id = payload.get("session_id")
+    role = payload.get("role")
+    content = payload.get("content")
+    timestamp = payload.get("timestamp", datetime.utcnow().isoformat())
+    if not (session_id and role and content):
+        raise HTTPException(status_code=400, detail="Missing session_id, role, or content.")
+    conn = sqlite3.connect("memory.sqlite")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO chat_messages (session_id, role, content, timestamp) VALUES (?, ?, ?, ?)", (session_id, role, content, timestamp))
+    cursor.execute("UPDATE chat_sessions SET updated_at = ? WHERE id = ?", (timestamp, session_id))
+    conn.commit()
+    conn.close()
+    return JSONResponse(content={"status": "success"})
 
 # Catch-all route for frontend - This must come LAST
 @app.get("/{full_path:path}", response_class=HTMLResponse)
