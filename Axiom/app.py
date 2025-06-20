@@ -275,7 +275,8 @@ async def get_chat_session_messages(session_id: str):
 @app.post("/api/chat_sessions")
 async def create_chat_session(payload: Dict[str, Any]):
     session_id = payload.get("id")
-    title = payload.get("title", "Untitled Chat")
+    # Use title if provided, else use first_message, else fallback
+    title = payload.get("title") or payload.get("first_message") or payload.get("message") or "Untitled Chat"
     now = datetime.utcnow().isoformat()
     conn = sqlite3.connect("memory.sqlite")
     cursor = conn.cursor()
@@ -306,6 +307,12 @@ async def add_chat_message(payload: Dict[str, Any]):
     cursor = conn.cursor()
     cursor.execute("INSERT INTO chat_messages (session_id, role, content, timestamp) VALUES (?, ?, ?, ?)", (session_id, role, content, timestamp))
     cursor.execute("UPDATE chat_sessions SET updated_at = ? WHERE id = ?", (timestamp, session_id))
+    # If this is the user's first message and the title is generic, update the title
+    if role == "user":
+        cursor.execute("SELECT title FROM chat_sessions WHERE id = ?", (session_id,))
+        row = cursor.fetchone()
+        if row and row[0] in ("Untitled Chat", "New Chat"):
+            cursor.execute("UPDATE chat_sessions SET title = ? WHERE id = ?", (content, session_id))
     conn.commit()
     conn.close()
     return JSONResponse(content={"status": "success"})

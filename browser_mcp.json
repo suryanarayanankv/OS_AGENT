@@ -2,6 +2,18 @@
   "mcpServers": {
     "zapier": {
       "url": "https://mcp.zapier.com/api/mcp/s/YWVlMTMwY2UtMzk3ZS00ZTExLWI4ODUtNTEyMWZiMjVhOTY0OjYyODAxMTVkLTZkMDctNDNlNS05ZjM5LTU5NmU4ZTFhNzgxNg==/sse"
+    },
+    "new": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "openmemory"
+      ],
+      "env": {
+        "OPENMEMORY_API_KEY": "om-2ajzvabvljkdhl7l4ak5vsk7sg9y5ptj",
+        "CLIENT_NAME": "openmemory"
+      }
     }
   }
 }

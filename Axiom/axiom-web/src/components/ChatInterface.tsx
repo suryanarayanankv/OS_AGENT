@@ -94,14 +94,14 @@ export const ChatInterface: React.FC = () => {
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   // Create new session (persisted)
-  const createNewSession = useCallback(async () => {
+  const createNewSession = useCallback(async (firstMessage?: string) => {
     try {
       const newId = generateId();
       const now = new Date();
       const res = await fetch('/api/chat_sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: newId, title: 'New Chat' }),
+        body: JSON.stringify({ id: newId, title: firstMessage || 'Untitled Chat' }),
       });
       if (!res.ok) throw new Error('Failed to create session');
       const data = await res.json();
@@ -125,7 +125,7 @@ export const ChatInterface: React.FC = () => {
     let currentSessionId = activeSessionId;
     // Create new session if none exists
     if (!currentSessionId) {
-      await createNewSession();
+      await createNewSession(inputMessage);
       // Wait for the new session to be set as active
       const res = await fetch('/api/chat_sessions');
       const data = await res.json();
@@ -162,6 +162,23 @@ export const ChatInterface: React.FC = () => {
         ? { ...session, messages: [...session.messages, userMessage], updatedAt: new Date() }
         : session
     ));
+    // --- ADDED: Reload sessions if title is generic ---
+    const currentSession = sessions.find(s => s.id === currentSessionId);
+    if (currentSession && (currentSession.title === 'Untitled Chat' || currentSession.title === 'New Chat')) {
+      fetch('/api/chat_sessions')
+        .then(res => res.json())
+        .then(data => {
+          const loadedSessions: ChatSession[] = (data.sessions || []).map((s: any) => ({
+            id: s.id,
+            title: s.title,
+            messages: [],
+            createdAt: parseDate(s.created_at),
+            updatedAt: parseDate(s.updated_at),
+          }));
+          setSessions(loadedSessions);
+          setActiveSessionId(currentSessionId); // Ensure UI updates to the correct session
+        });
+    }
     setInputMessage('');
     setIsTyping(true);
     try {
