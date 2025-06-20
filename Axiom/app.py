@@ -14,7 +14,6 @@ from datetime import datetime, timezone
 import os
 from google.cloud import firestore
 from google.oauth2 import service_account
-
 # Import backend components
 from axiom_backend.Axiom_2 import initialize_agent, invoke_agent, summarize_chat_history
 from axiom_backend.Axiom_State import AgentState
@@ -53,7 +52,7 @@ templates = Jinja2Templates(directory=frontend_dist_dir)
 app.include_router(mcp_router, prefix="/api")
 
 # Firestore client (ensure GOOGLE_APPLICATION_CREDENTIALS is set)
-creds = service_account.Credentials.from_service_account_file("C:/Users/jovin/Downloads/axiom-463504-feea787c865f.json")
+creds = service_account.Credentials.from_service_account_file("/home/rix/axiom-code/OS_AGENT/axiom-463504-feea787c865f.json")
 firestore_client=firestore.Client(credentials=creds, project="axiom-463504")
 
 def check_activation(email: str, code: str):
@@ -203,7 +202,7 @@ async def log_metrics_endpoint():
         raise HTTPException(status_code=500, detail=f"Error logging metrics: {str(e)}")
 
 @app.post("/api/chat")
-async def chat_endpoint(payload: Dict[str, Any], activation=Depends(require_activation)):
+async def chat_endpoint(payload: Dict[str, Any]):
     """Handle chat messages from the frontend."""
     session_id = payload.get("session_id")
     user_message_content = payload.get("message")

@@ -64,7 +64,7 @@ async def initialize_and_get_mcp_tools() -> List[BaseTool]:
         
         try:
             # Ensure config file exists
-            config_path = r"C:\Users\Surya Narayanan K V\OS_AGENT\browser_mcp.json"
+            config_path = r"/home/rix/axiom-code/OS_AGENT/browser_mcp.json"
             
             # Load and validate config
             # with open(config_path, 'r') as f:
