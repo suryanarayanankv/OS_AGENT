@@ -4,9 +4,25 @@ import { ArrowRight, Play, Sparkles, Zap, Download } from 'lucide-react';
 import Lottie from 'lottie-react';
 import GeometricBackground from './GeometricBackground';
 import DownloadDropdown from './DownloadDropdown';
+import FreeTrialModal from './FreeTrialModal';
+import { useAuth } from '../contexts/AuthContext';
+import { getFirestore, doc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import app from '../config/firebase';
+
+const db = getFirestore(app);
+
+function generateActivationCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
 
 const Hero = () => {
   const [showDownloadMenu, setShowDownloadMenu] = React.useState(false);
+  const { currentUser } = useAuth();
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [activationCode, setActivationCode] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [successMessage, setSuccessMessage] = React.useState<string | undefined>(undefined);
 
   // Lottie animation data for AI/Robot theme
   const aiAnimationData = {
@@ -77,6 +93,46 @@ const Hero = () => {
         "bm": 0
       }
     ]
+  };
+
+  const handleStartFreeTrial = () => {
+    if (!currentUser) {
+      // Redirect to login (you can use your modal or a route)
+      window.location.href = '/login'; // or trigger your login modal
+      return;
+    }
+    setActivationCode(generateActivationCode());
+    setModalOpen(true);
+  };
+
+  const handleConfirm = async () => {
+    if (!currentUser) return;
+    setLoading(true);
+    try {
+      const expiresAt = Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+      await setDoc(doc(db, 'activationTokens', currentUser.uid), {
+        code: activationCode,
+        userId: currentUser.uid,
+        email: currentUser.email,
+        plan: 'free-trial',
+        createdAt: serverTimestamp(),
+        expiresAt,
+        status: 'active',
+        used: false,
+        source: 'free-trial-modal',
+      });
+      // TODO: Call cloud function to send email here
+      setSuccessMessage('Your 1-month trial has been activated. Check your email for the code.');
+    } catch (e) {
+      setSuccessMessage('There was an error activating your trial. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setModalOpen(false);
+    setSuccessMessage(undefined);
   };
 
   return (
@@ -153,6 +209,7 @@ const Hero = () => {
                 whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(139, 92, 246, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold flex items-center space-x-3 shadow-xl hover:shadow-2xl transition-all duration-300"
+                onClick={handleStartFreeTrial}
               >
                 <span>Start Free Trial</span>
                 <ArrowRight className="h-5 w-5" />
@@ -295,6 +352,14 @@ const Hero = () => {
           </div>
         </motion.div>
       </div>
+      <FreeTrialModal
+        open={modalOpen}
+        code={activationCode}
+        loading={loading}
+        successMessage={successMessage}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </section>
   );
 };
