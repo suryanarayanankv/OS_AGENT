@@ -1,3 +1,0 @@
-"""
-Axiom Backend Package
-""" 
