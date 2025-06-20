@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -10,8 +10,10 @@ from typing import Dict, Any, List
 import json
 from contextlib import asynccontextmanager
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 import os
+from google.cloud import firestore
+from google.oauth2 import service_account
 
 # Import backend components
 from axiom_backend.Axiom_2 import initialize_agent, invoke_agent, summarize_chat_history
@@ -24,6 +26,7 @@ from axiom_backend.system_metrics import (
     log_system_metrics, 
     get_historical_metrics
 )
+
 app = FastAPI()
 
 # Add CORS middleware
@@ -48,6 +51,53 @@ templates = Jinja2Templates(directory=frontend_dist_dir)
 
 # Include MCP router
 app.include_router(mcp_router, prefix="/api")
+
+# Firestore client (ensure GOOGLE_APPLICATION_CREDENTIALS is set)
+creds = service_account.Credentials.from_service_account_file("C:/Users/jovin/Downloads/axiom-463504-feea787c865f.json")
+firestore_client=firestore.Client(credentials=creds, project="axiom-463504")
+
+def check_activation(email: str, code: str):
+    docs = firestore_client.collection("activationTokens") \
+        .where("email", "==", email) \
+        .where("code", "==", code) \
+        .where("status", "==", "active") \
+        .stream()
+    docs = list(docs)
+    if not docs:
+        return False
+    doc = docs[0]
+    data = doc.to_dict()
+    # Check expiry
+    expires_at = data.get("expiresAt")
+    if expires_at:
+        # Firestore timestamp to Python datetime
+        if hasattr(expires_at, "timestamp"):
+            expires_at_ts = expires_at.timestamp()
+        else:
+            expires_at_ts = float(expires_at)
+        now = datetime.now(timezone.utc).timestamp()
+        if now > expires_at_ts:
+            return False
+    return True
+
+async def require_activation(request: Request):
+    email = request.headers.get("x-activation-email")
+    code = request.headers.get("x-activation-code")
+    if not email or not code or not check_activation(email, code):
+        raise HTTPException(
+            status_code=401,
+            detail="Activation required. Please create a token at https://your-official-website.com."
+        )
+
+@app.post("/api/validate-activation")
+async def validate_activation(payload: dict):
+    email = payload.get("email")
+    code = payload.get("code")
+    if not email or not code:
+        raise HTTPException(status_code=400, detail="Email and code required.")
+    if not check_activation(email, code):
+        return JSONResponse(content={"valid": False, "message": "Invalid or expired activation code."})
+    return JSONResponse(content={"valid": True})
 
 def init_chat_db():
     db_path = os.path.join(os.path.dirname(__file__), "memory.sqlite")
@@ -153,7 +203,7 @@ async def log_metrics_endpoint():
         raise HTTPException(status_code=500, detail=f"Error logging metrics: {str(e)}")
 
 @app.post("/api/chat")
-async def chat_endpoint(payload: Dict[str, Any]):
+async def chat_endpoint(payload: Dict[str, Any], activation=Depends(require_activation)):
     """Handle chat messages from the frontend."""
     session_id = payload.get("session_id")
     user_message_content = payload.get("message")

@@ -5,6 +5,7 @@ import { ChatHistory } from './components/ChatHistory';
 import { MCPServerConfig } from './components/MCPServerConfig';
 import { Dashboard } from './components/Dashboard';
 import { Home, MessageSquare, History, Settings, BarChart3, Sparkles } from 'lucide-react';
+import ActivationForm from './components/ActivationForm';
 
 const Navigation: React.FC = () => {
   const location = useLocation();
@@ -57,6 +58,19 @@ const Navigation: React.FC = () => {
 const NAV_HEIGHT = 80; // px, matches p-4 and content height
 
 const App: React.FC = () => {
+  const [activated, setActivated] = React.useState(() => {
+    try {
+      const data = localStorage.getItem('activation');
+      return !!data;
+    } catch {
+      return false;
+    }
+  });
+
+  if (!activated) {
+    return <ActivationForm onSuccess={() => setActivated(true)} />;
+  }
+
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
