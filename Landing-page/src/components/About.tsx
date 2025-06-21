@@ -104,7 +104,7 @@ const About = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-20"
+          className="hidden grid grid-cols-2 md:grid-cols-4 gap-8 mb-20"
         >
           {stats.map((stat, index) => (
             <motion.div
@@ -139,14 +139,10 @@ const About = () => {
           >
             <h3 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Founded in 2021 by a team of AI researchers and engineers from top tech companies, 
-              Axiom was born from the frustration of seeing businesses struggle with manual, 
-              repetitive tasks that could be easily automated.
+            We are Team Yukti, a passionate and dynamic group of innovators with over two years of experience in building impactful solutions through hackathons. Our journey has taken us across various platforms, where we've won multiple hackathons, including the prestigious Kochi Hackathon. One of our proudest achievements is being selected as Global Nominees in the NASA Space Apps Challenge—an honor that fuels our drive to solve real-world problems through technology.
             </p>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              We realized that while AI technology was advancing rapidly, it remained largely 
-              inaccessible to most businesses due to complexity and cost. Our mission became clear: 
-              create an AI automation platform that anyone could use, regardless of technical expertise.
+            As part of the 100X Engineers Buildathon, we created Axiom—our flagship automation agent designed to simplify and automate both business and personal tasks. Axiom helps save time, streamline operations, and optimize resource usage. At Yukti, we believe in turning bold ideas into purposeful innovation, and our story is just getting started.
             </p>
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -219,6 +215,7 @@ const About = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false }}
           transition={{ duration: 0.6 }}
+          className='hidden'
         >
           <h3 className="text-3xl font-bold text-gray-900 text-center mb-12">Meet Our Team</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
